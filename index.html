@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sultan's Empire - Bot Maker</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --tg-theme-bg-color: #17212b;
+            --tg-theme-text-color: #f5f5f5;
+            --tg-theme-hint-color: #708499;
+            --tg-theme-link-color: #5288c1;
+            --tg-theme-button-color: #5288c1;
+            --tg-theme-button-text-color: #ffffff;
+            --tg-theme-secondary-bg-color: #24303f;
+            --accent-gold: #ffd700;
+            --danger-color: #e53935;
+            --success-color: #4caf50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            padding-bottom: 80px;
+            font-size: 14px;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background-color: var(--tg-theme-secondary-bg-color);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header h1 {
+            font-size: 18px;
+            color: var(--tg-theme-link-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .vip-banner {
+            background: linear-gradient(135deg, #ffd700, #ffa500);
+            color: #000;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255,215,0,0.2);
+        }
+        .vip-banner button {
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .bot-card {
+            background-color: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .bot-info h3 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        .bot-info p {
+            color: var(--tg-theme-hint-color);
+            font-size: 12px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .status-badge.active { background: rgba(76, 175, 80, 0.2); color: var(--success-color); }
+        
+        .bot-actions button {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            color: var(--tg-theme-text-color);
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .bots-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .grid-item {
+            background-color: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            cursor: pointer;
+        }
+        .grid-item i {
+            font-size: 28px;
+            color: var(--tg-theme-link-color);
+            margin-bottom: 10px;
+        }
+        .grid-item h4 { font-size: 14px; }
+        .vip-tag {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: var(--accent-gold);
+            color: #000;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 200;
+            align-items: flex-end;
+        }
+        .modal-content {
+            background-color: var(--tg-theme-bg-color);
+            width: 100%;
+            max-height: 85vh;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            padding: 20px;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .close-btn {
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--tg-theme-hint-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--tg-theme-hint-color);
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--tg-theme-secondary-bg-color);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            color: var(--tg-theme-text-color);
+            font-size: 14px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--tg-theme-link-color);
+        }
+
+        .dynamic-fields {
+            background: rgba(255,255,255,0.02);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            height: 65px;
+            background-color: var(--tg-theme-secondary-bg-color);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--tg-theme-hint-color);
+            cursor: pointer;
+            font-size: 11px;
+            gap: 4px;
+        }
+        .nav-item i { font-size: 20px; }
+        .nav-item.active {
+            color: var(--tg-theme-link-color);
+        }
+
+        .profile-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .profile-avatar {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: var(--tg-theme-secondary-bg-color);
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            border: 2px solid var(--tg-theme-link-color);
+        }
+        .vip-status-text {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        .vip-active { color: var(--accent-gold); }
+        .free-active { color: var(--tg-theme-hint-color); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1><i class="fa-solid fa-crown" style="color: var(--accent-gold);"></i> إمبراطورية سلطان (Sultan's Empire)</h1>
+    </div>
+
+    <div id="my-bots" class="tab-content active">
+        <div class="vip-banner" id="upgradeBanner">
+            <span>🚀 ضاعف قوتك وانتقل للحساب الـ VIP Pro!</span>
+            <button onclick="switchTab('profile')">ترقية ⭐</button>
+        </div>
+        <h2 style="font-size: 16px; margin-bottom: 15px;">بوتاتك النشطة والقديمة:</h2>
+        <div id="botsListContainer">
+            <p style="color: var(--tg-theme-hint-color); text-align: center; margin-top: 20px;">جاري تحميل بوتاتك من السيرفر...</p>
+        </div>
+    </div>
+
+    <div id="create-bot" class="tab-content">
+        <h2 style="font-size: 16px; margin-bottom: 15px;">اختر نوع البوت المراد صناعته:</h2>
+        <div class="bots-grid">
+            <div class="grid-item" onclick="openWizard('buttons')">
+                <i class="fa-solid fa-gamepad"></i>
+                <h4>بوت أزرار تفاعلي</h4>
+            </div>
+            <div class="grid-item" onclick="openWizard('security')">
+                <i class="fa-solid fa-shield-halved"></i>
+                <h4>بوت حماية المجموعات</h4>
+            </div>
+            <div class="grid-item" onclick="openWizard('join')">
+                <i class="fa-solid fa-user-plus"></i>
+                <h4>الموافقة التلقائية للانضمام</h4>
+            </div>
+            <div class="grid-item" onclick="openWizard('account')">
+                <i class="fa-solid fa-id-card"></i>
+                <h4>بوت إدارة الحساب والخدمات</h4>
+            </div>
+            <div class="grid-item" onclick="openWizard('shop')">
+                <span class="vip-tag">VIP Pro ⭐</span>
+                <i class="fa-solid fa-store" style="color: var(--accent-gold);"></i>
+                <h4>بوت المتجر الرقمي</h4>
+            </div>
+        </div>
+    </div>
+
+    <div id="profile" class="tab-content">
+        <div class="profile-container">
+            <div class="profile-avatar" id="userAvatar"><i class="fa-solid fa-user"></i></div>
+            <h3 id="userName">مستخدم تيلجرام</h3>
+            <p class="vip-status-text" id="vipStatusDisplay">الخطة الحالية: <span class="free-active">المجانية (Free)</span></p>
+        </div>
+        <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 20px 0;">
+        <div style="background-color: var(--tg-theme-secondary-bg-color); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,215,0,0.3);">
+            <h3 style="color: var(--accent-gold); margin-bottom: 10px;"><i class="fa-solid fa-star"></i> مميزات حساب VIP Pro:</h3>
+            <ul style="list-style: none; line-height: 2; color: #ddd; margin-bottom: 15px;">
+                <li>🌟 إنشاء عدد غير محدود من البوتات.</li>
+                <li>🌟 فتح "بوت المتجر الرقمي المتكامل".</li>
+                <li>🌟 إزالة حقوق منصة سلطان تماماً من البوتات.</li>
+                <li>🌟 تعديل لحظي فوري للبوتات في أي وقت.</li>
+            </ul>
+            <button class="submit-btn" style="background: linear-gradient(135deg, #ffd700, #ffa500); color: #000;" onclick="buyVipWithStars()">
+                اشتراك الآن بـ 150 نجمة شهرياً ⭐
+            </button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" id="btn-my-bots" onclick="switchTab('my-bots')">
+            <i class="fa-solid fa-robot"></i>
+            <span>بوتاتك</span>
+        </div>
+        <div class="nav-item" id="btn-create-bot" onclick="switchTab('create-bot')">
+            <i class="fa-solid fa-circle-plus"></i>
+            <span>صناعة بوت</span>
+        </div>
+        <div class="nav-item" id="btn-profile" onclick="switchTab('profile')">
+            <i class="fa-solid fa-crown"></i>
+            <span>الترقية</span>
+        </div>
+    </div>
+
+    <div class="modal" id="botWizardModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">إعدادات البوت الجديد</h3>
+                <span class="close-btn" onclick="closeWizard()">&times;</span>
+            </div>
+            <form id="botConfigForm">
+                <input type="hidden" id="currentBotType">
+                <input type="hidden" id="editingBotId">
+
+                <div class="form-group">
+                    <label>توكن البوت المأخوذ من BotFather:</label>
+                    <input type="text" id="botToken" placeholder="123456789:ABCdefGhIJKlmNoPQ..." required>
+                </div>
+                <div class="form-group">
+                    <label>اسم البوت للتعريف داخل المنصة:</label>
+                    <input type="text" id="botName" placeholder="مثال: متجر سلطان الرقمي" required>
+                </div>
+
+                <div id="dynamicFieldsContainer"></div>
+
+                <div id="freeTierWatermark" style="font-size: 12px; color: var(--danger-color); margin-bottom: 15px; display: none;">
+                    ⚠️ الحساب مجاني: سيتم إدراج رابط منصتنا تلقائياً في أسفل رسائل البوت.
+                </div>
+
+                <button type="submit" class="submit-btn" id="saveBotBtn">تشغيل وحفظ البوت فوراً 🚀</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+        // إعدادات الفايربيس الخاصة بمشروعك الجديد bot-trading-175e2
+        const firebaseConfig = {
+            apiKey: "AIzaSyCRRykMJG9x2QjXL7zvr5bFHExaLgbvK8o",
+            authDomain: "bot-trading-175e2.firebaseapp.com",
+            databaseURL: "https://bot-trading-175e2-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "bot-trading-175e2",
+            storageBucket: "bot-trading-175e2.firebasestorage.app",
+            messagingSenderId: "258267116344",
+            appId: "1:258267116344:web:84d612eddd520da54207cd",
+            measurementId: "G-ZZ1B91GBX7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ⚠️ ضَع هنا رابط الـ Render الأزرق بمجرد رفعه لكي يقوم الـ HTML بالربط التلقائي
+        const RENDER_SERVER_URL = "https://ضع_رابط_ريندر_هنا.onrender.com";
+        const MAIN_BOT_TOKEN = "8512401573:AAG2CMxIcmns-CmEiTAWRmpJZjVvpI1nN2g";
+
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        const user = tg.initDataUnsafe?.user || { id: "test_user_123", first_name: "مصطفى المطور" };
+        const userId = String(user.id);
+
+        let isVip = false;
+        let userBotsList = [];
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            setupUserData();
+            await checkUserVipStatus();
+            await loadUserBots();
+        });
+
+        function setupUserData() {
+            document.getElementById("userName").innerText = user.first_name;
+            if(user.photo_url) {
+                document.getElementById("userAvatar").innerHTML = `<img src="${user.photo_url}" style="width:100%; height:100%; border-radius:50%;">`;
+            }
+        }
+
+        async function checkUserVipStatus() {
+            try {
+                const userDocRef = doc(db, "users", userId);
+                const userDoc = await getDoc(userDocRef);
+                if (userDoc.exists() && userDoc.data().isVip === true) {
+                    isVip = true;
+                    document.getElementById("vipStatusDisplay").innerHTML = 'الخطة الحالية: <span class="vip-active">VIP Pro 👑</span>';
+                    document.getElementById("upgradeBanner").style.display = "none";
+                    document.getElementById("freeTierWatermark").style.display = "none";
+                } else {
+                    isVip = false;
+                    document.getElementById("vipStatusDisplay").innerHTML = 'الخطة الحالية: <span class="free-active">المجانية (Free) 🟢</span>';
+                    document.getElementById("upgradeBanner").style.display = "flex";
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadUserBots() {
+            const container = document.getElementById("botsListContainer");
+            try {
+                const q = query(collection(db, "bots"), where("userId", "==", userId));
+                const querySnapshot = await getDocs(q);
+                userBotsList = [];
+                container.innerHTML = "";
+
+                if (querySnapshot.empty) {
+                    container.innerHTML = `<p style="color: var(--tg-theme-hint-color); text-align: center; margin-top: 20px;">لم تقم بصنع أي بوت بعد.</p>`;
+                    return;
+                }
+
+                querySnapshot.forEach((docSnap) => {
+                    const botData = docSnap.data();
+                    botData.id = docSnap.id;
+                    userBotsList.push(botData);
+
+                    let typeName = botData.type === 'buttons' ? 'بوت أزرار' : 'بوت مخصص';
+                    const card = document.createElement("div");
+                    card.className = "bot-card";
+                    card.innerHTML = `
+                        <div class="bot-info">
+                            <h3>${botData.name}</h3>
+                            <p>النوع: ${typeName} | <span class="status-badge active">نشط 🟢</span></p>
+                        </div>
+                        <div class="bot-actions">
+                            <button onclick="editExistingBot('${botData.id}')"><i class="fa-solid fa-gear" style="color: var(--tg-theme-link-color);"></i></button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (e) { container.innerHTML = `<p style="color: var(--danger-color);">خطأ في جلب البيانات.</p>`; }
+        }
+
+        window.openWizard = function(type) {
+            if (type === 'shop' && !isVip) {
+                tg.showAlert("❌ عذراً! بوت المتجر متاح فقط للمشتركين بخطة VIP Pro.");
+                return;
+            }
+            if (!isVip && userBotsList.length >= 1) {
+                tg.showAlert("❌ الحساب المجاني يسمح بإنشاء بوت واحد فقط! قم بالترقية لـ VIP.");
+                return;
+            }
+
+            document.getElementById("currentBotType").value = type;
+            document.getElementById("editingBotId").value = "";
+            document.getElementById("botConfigForm").reset();
+            const fieldsContainer = document.getElementById("dynamicFieldsContainer");
+            fieldsContainer.innerHTML = "";
+            document.getElementById("freeTierWatermark").style.display = isVip ? "none" : "block";
+
+            if (type === 'buttons') {
+                fieldsContainer.innerHTML = `
+                    <div class="form-group"><label>رسالة الترحيب الأولى (/start):</label><textarea id="welcomeMsg" rows="3" required></textarea></div>
+                    <div class="dynamic-fields">
+                        <label>إعداد الزر الشفاف:</label>
+                        <input type="text" id="btn1Name" placeholder="اسم الزر" style="margin-bottom:8px;" required>
+                        <input type="url" id="btn1Link" placeholder="الرابط" required>
+                    </div>`;
+            } else if (type === 'security') {
+                fieldsContainer.innerHTML = `
+                    <div class="form-group"><label>الإجراء عند رصد روابط:</label>
+                    <select id="securityAction"><option value="mute">كتم العضو</option><option value="kick">طرد العضو</option></select></div>`;
+            } else if (type === 'join') {
+                fieldsContainer.innerHTML = `
+                    <div class="form-group"><label>رسالة ترحيب العضو الجديد بالخاص:</label><textarea id="joinWelcomeMsg" rows="3" required></textarea></div>`;
+            } else if (type === 'account') {
+                fieldsContainer.innerHTML = `
+                    <div class="form-group"><label>نبذة تعريفية للخدمات:</label><textarea id="profileBio" rows="2" required></textarea></div>
+                    <div class="form-group"><label>سعر الخدمة بالدولار:</label><input type="number" id="servicePrice"></div>`;
+            } else if (type === 'shop') {
+                fieldsContainer.innerHTML = `
+                    <div class="form-group"><label>اسم السلعة الرقمية:</label><input type="text" id="prodName" required></div>
+                    <div class="form-group"><label>السعر:</label><input type="number" id="prodPrice" required></div>`;
+            }
+
+            document.getElementById("modalTitle").innerText = "إعدادات البوت";
+            document.getElementById("botWizardModal").style.display = "flex";
+        };
+
+        window.editExistingBot = function(botId) {
+            const botData = userBotsList.find(b => b.id === botId);
+            if(!botData) return;
+            openWizard(botData.type);
+            document.getElementById("editingBotId").value = botData.id;
+            document.getElementById("botToken").value = botData.token;
+            document.getElementById("botName").value = botData.name;
+        };
+
+        window.closeWizard = function() { document.getElementById("botWizardModal").style.display = "none"; };
+
+        document.getElementById("botConfigForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const type = document.getElementById("currentBotType").value;
+            const editingId = document.getElementById("editingBotId").value;
+            const token = document.getElementById("botToken").value;
+            const name = document.getElementById("botName").value;
+
+            const botPayload = { userId: userId, type: type, token: token, name: name, isVip: isVip, updatedAt: new Date().toISOString() };
+
+            if (type === 'buttons') {
+                botPayload.welcomeMsg = document.getElementById("welcomeMsg").value;
+                botPayload.btn1Name = document.getElementById("btn1Name").value;
+                botPayload.btn1Link = document.getElementById("btn1Link").value;
+            } else if (type === 'security') {
+                botPayload.securityAction = document.getElementById("securityAction").value;
+            } else if (type === 'join') {
+                botPayload.joinWelcomeMsg = document.getElementById("joinWelcomeMsg").value;
+            } else if (type === 'account') {
+                botPayload.profileBio = document.getElementById("profileBio").value;
+                botPayload.servicePrice = document.getElementById("servicePrice").value;
+            } else if (type === 'shop') {
+                botPayload.prodName = document.getElementById("prodName").value;
+                botPayload.prodPrice = document.getElementById("prodPrice").value;
+            }
+
+            try {
+                const botDocId = editingId ? editingId : "bot_" + Date.now();
+                await setDoc(doc(db, "bots", botDocId), botPayload, { merge: true });
+
+                // تفعيل الـ Webhook التلقائي مع سيرفر Render ومزامنة تيلجرام فوراً
+                if (RENDER_SERVER_URL.includes("onrender.com")) {
+                    await fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${RENDER_SERVER_URL}/webhook?token=${token}`);
+                }
+
+                await fetch(`https://api.telegram.org/bot${MAIN_BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: userId, text: `🎉 تم تهيئة وتشغيل بوتك المخصص (${name}) بنجاح وربطه بالخلفية!` })
+                });
+
+                tg.showPopup({ title: "تم الحفظ والتشغيل! 🎉", message: "البوت جاهز حالياً وتلقى أمر التشغيل الفوري.", buttons: [{type: "ok"}] });
+                closeWizard();
+                await loadUserBots();
+                switchTab('my-bots');
+            } catch (error) { tg.showAlert("❌ حدث خطأ أثناء الاتصال بالفايربيس."); }
+        });
+
+        window.buyVipWithStars = async function() {
+            tg.showConfirm("هل تود الترقية لـ VIP Pro ومخصوم منك 150 نجمة؟ ⭐", async (confirmed) => {
+                if (confirmed) {
+                    await setDoc(doc(db, "users", userId), { isVip: true, upgradedAt: new Date().toISOString() }, { merge: true });
+                    tg.showAlert("👑 مبروك يا سلطان! تم تفعيل اشتراك VIP Pro بنجاح.");
+                    await checkUserVipStatus();
+                }
+            });
+        };
+
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        };
+    </script>
+</body>
+</html>
