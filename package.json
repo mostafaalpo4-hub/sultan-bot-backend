@@ -1,0 +1,14 @@
+{
+  "name": "sultan-bot-backend",
+  "version": "1.0.0",
+  "description": "Backend for Sultan Empire Bots",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "firebase-admin": "^12.1.0",
+    "axios": "^1.6.8"
+  }
+}
