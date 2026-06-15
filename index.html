@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sultan's Empire - Bot Maker</title>
+    <!-- سكريبت تيلجرام الرسمي للميني أب -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- أيقونات FontAwesome تناسب الموبايل -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -290,6 +292,7 @@
         <h1><i class="fa-solid fa-crown" style="color: var(--accent-gold);"></i> إمبراطورية سلطان (Sultan's Empire)</h1>
     </div>
 
+    <!-- التبويب الأول: بوتاتك الحالية -->
     <div id="my-bots" class="tab-content active">
         <div class="vip-banner" id="upgradeBanner">
             <span>🚀 ضاعف قوتك وانتقل للحساب الـ VIP Pro!</span>
@@ -301,6 +304,7 @@
         </div>
     </div>
 
+    <!-- التبويب الثاني: صناعة بوت جديد -->
     <div id="create-bot" class="tab-content">
         <h2 style="font-size: 16px; margin-bottom: 15px;">اختر نوع البوت المراد صناعته:</h2>
         <div class="bots-grid">
@@ -328,6 +332,7 @@
         </div>
     </div>
 
+    <!-- التبويب الثالث: الحساب والترقية VIP -->
     <div id="profile" class="tab-content">
         <div class="profile-container">
             <div class="profile-avatar" id="userAvatar"><i class="fa-solid fa-user"></i></div>
@@ -349,6 +354,7 @@
         </div>
     </div>
 
+    <!-- شريط التنقل السفلي -->
     <div class="bottom-nav">
         <div class="nav-item active" id="btn-my-bots" onclick="switchTab('my-bots')">
             <i class="fa-solid fa-robot"></i>
@@ -364,6 +370,7 @@
         </div>
     </div>
 
+    <!-- النافذة المنبثقة لإعداد وتعديل البوتات -->
     <div class="modal" id="botWizardModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -394,6 +401,7 @@
         </div>
     </div>
 
+    <!-- سكريبت الفايربيس والتحكم المرتبط بـ Vercel مباشرة -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
@@ -413,8 +421,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ⚠️ ضَع هنا رابط الـ Render الأزرق بمجرد رفعه لكي يقوم الـ HTML بالربط التلقائي
-        const RENDER_SERVER_URL = "https://ضع_رابط_ريندر_هنا.onrender.com";
+        // ✅ تم تحديث الرابط ليكون سيرفر Vercel الخاص بك مباشرة ليعمل التزامن فوراً
+        const RENDER_SERVER_URL = "https://sultan-bot-backend.vercel.app";
         const MAIN_BOT_TOKEN = "8512401573:AAG2CMxIcmns-CmEiTAWRmpJZjVvpI1nN2g";
 
         const tg = window.Telegram.WebApp;
@@ -577,18 +585,18 @@
                 const botDocId = editingId ? editingId : "bot_" + Date.now();
                 await setDoc(doc(db, "bots", botDocId), botPayload, { merge: true });
 
-                // تفعيل الـ Webhook التلقائي مع سيرفر Render ومزامنة تيلجرام فوراً
-                if (RENDER_SERVER_URL.includes("onrender.com")) {
+                // تفعيل الـ Webhook التلقائي مع سيرفر Vercel الجديد ومزامنة تيلجرام فوراً
+                if (RENDER_SERVER_URL.includes("vercel.app")) {
                     await fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${RENDER_SERVER_URL}/webhook?token=${token}`);
                 }
 
                 await fetch(`https://api.telegram.org/bot${MAIN_BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: userId, text: `🎉 تم تهيئة وتشغيل بوتك المخصص (${name}) بنجاح وربطه بالخلفية!` })
+                    body: JSON.stringify({ chat_id: userId, text: `🎉 تم تهيئة وتشغيل بوتك المخصص (${name}) بنجاح وربطه بالخلفية على فيرسيل!` })
                 });
 
-                tg.showPopup({ title: "تم الحفظ والتشغيل! 🎉", message: "البوت جاهز حالياً وتلقى أمر التشغيل الفوري.", buttons: [{type: "ok"}] });
+                tg.showPopup({ title: "تم الحفظ والتشغيل! 🎉", message: "البوت جاهز حالياً وتلقى أمر التشغيل الفوري من السيرفر الجديد.", buttons: [{type: "ok"}] });
                 closeWizard();
                 await loadUserBots();
                 switchTab('my-bots');
